@@ -1,4 +1,5 @@
 import React from "react";
+import ButtonAppBar from "./pages";
 
 function App() {
   const [data, setData] = React.useState(null);
@@ -12,7 +13,8 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <p>{!data ? "Loading..." : data}</p>
+        <ButtonAppBar />
+        {/* <p>{!data ? "Loading..." : data}</p> */}
       </header>
     </div>
   );
