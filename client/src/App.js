@@ -1,22 +1,27 @@
 import React from "react";
-import ButtonAppBar from "./pages";
+import Store from "./pages/Store";
+import { Router, Route, Routes } from "react-router-dom";
+import ProductDetailed from "./pages/ProductDetailed";
+import TopBarClient from "./components/TopBarClient";
+import Login from "./pages/Login";
+import Admin from "./pages/AdminProduct";
+import './index.css';
+import sheep from './recources/sheep.gif'
+import Greetings from "./components/Greetings";
+import AdminProducts from "./pages/AdminProducts";
+import AdminGroups from "./pages/AdminGroups";
+import AdminGroup from "./pages/AdminGroup";
+import AdminProduct from "./pages/AdminProduct";
+import Logout from "./pages/Logout";
+import AppRoutes from "./AppRoutes";
 
 function App() {
-  const [data, setData] = React.useState(null);
-
-  React.useEffect(() => {
-    fetch("/api")
-      .then((res) => res.json())
-      .then((data) => setData(data.message));
-  }, []);
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <ButtonAppBar />
-        {/* <p>{!data ? "Loading..." : data}</p> */}
-      </header>
-    </div>
+    <>
+      <TopBarClient />
+      {/* <Greetings /> */}
+      <AppRoutes />
+    </>
   );
 }
 
