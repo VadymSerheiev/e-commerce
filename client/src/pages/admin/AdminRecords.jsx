@@ -116,7 +116,7 @@ export default function AdminRecords() {
 
   const columns = [
     // { field: "code", headerName: "Код", width: 90 },
-    // { field: "name", headerName: "Назва", width: 150, editable: true },
+    { field: "name", headerName: "Назва", width: 150, editable: true },
     { field: "description", headerName: "Опис", width: 150, editable: true, ...multilineColumn, },
     { field: "timestamp", headerName: "Дата", width: 180, editable: false, type: 'dateTime', renderCell: renderDateTime, },
     // {

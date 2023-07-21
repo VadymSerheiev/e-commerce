@@ -1,17 +1,10 @@
-import * as React from "react";
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
+import { Container } from "@mui/material";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
-import { useNavigate, useLocation } from "react-router-dom";
-import sheep from "../recources/sheep.jpg";
-import BlogRecord from "../components/BlogRecord";
-import { Container } from "@mui/material";
+import * as React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import BlogRecord from "../../components/BlogRecord";
+import { v4 as uuidv4 } from 'uuid';
 
 const BlogRecordsList = ({ records }) => {
   //   const records = [1, 2, 3, 4, 5, 6, 7];
@@ -60,7 +53,7 @@ const BlogRecordsList = ({ records }) => {
       {!!records.length && (
         <Container sx={{ py: 1 }} maxWidth="sm">
           {showCards.map((record, i) => (
-            <BlogRecord key={record.photos[0]} record={record}/>
+            <BlogRecord key={uuidv4()} record={record}/>
           ))}
           <Stack spacing={2} sx={{ pt: 2 }}>
             <p>

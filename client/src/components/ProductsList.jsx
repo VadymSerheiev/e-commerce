@@ -1,16 +1,10 @@
-import * as React from "react";
 import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
-import { useNavigate, useLocation } from "react-router-dom";
-import sheep from "../recources/sheep.jpg";
+import * as React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import ProductItem from "./ProductItem";
+const { v4: uuidv4 } = require('uuid');
 
 const ProductsList = (props) => {
   const { cards } = props;
@@ -61,7 +55,7 @@ const ProductsList = (props) => {
   return (
     <>
       <Grid container spacing={2}>
-        {showCards.map((card, i) => (<ProductItem card={card} clickViewHandler={clickViewHandler}/>))}
+        {showCards.map((card, i) => (<ProductItem key={uuidv4()} card={card} clickViewHandler={clickViewHandler} {...props}/>))}
       </Grid>
       <Stack spacing={2} sx={{ pt: 2 }}>
         <p>

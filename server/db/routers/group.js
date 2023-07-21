@@ -4,11 +4,11 @@ const router = new express.Router()
 
 // post or put?
 router.post('/admin/groups', async (req, res) => {
-    const newGroup = req.body.group;
-    const gropus = await Group.findOneAndUpdate({}, { $push: { groups: newGroup }})
+    const group = new Group(req.body)
 
     try {
-        res.status(201).send(gropus)
+        await group.save()
+        res.status(201).send(group)
     } catch (e) {
         res.status(400).send()
     }
@@ -16,7 +16,7 @@ router.post('/admin/groups', async (req, res) => {
 
 router.get('/groups', async (req, res) => {
     try {
-        const groups = await Group.findOne({})
+        const groups = await Group.find({})
         res.send(groups)
     } catch (e) {
         res.status(500).send()
@@ -25,14 +25,9 @@ router.get('/groups', async (req, res) => {
 
 router.delete('/admin/groups', async (req, res) => {
     try {
-        const groupsToDelete = req.body.groupsToDelete;
-        const {groups} = await Group.findOne({})
-
-        const filteredGroups = groups.filter((group) => {
-            return !groupsToDelete.includes(group)
-        })
-
-        await Group.findOneAndUpdate({}, {$set: {groups: filteredGroups}})
+        const ids = req.body.groupsToDelete;
+        
+        await Group.deleteMany({_id:{$in: ids}})
 
         res.status(200).send()
     } catch (e) {

@@ -13,6 +13,7 @@ import Grid from "@mui/material/Grid";
 import InputBase from "@mui/material/InputBase";
 import Popper from "@mui/material/Popper";
 import Paper from "@mui/material/Paper";
+import { useNavigate } from "react-router";
 
 const EditTextarea = (props) => {
   const { id, field, value, colDef, api } = props;
@@ -80,6 +81,8 @@ const style = {
 };
 
 export default function AdminProducts() {
+  const navigate = useNavigate();
+  
   const [initialCards, setInitialCards] = React.useState([]);
   const [selectedRows, setSelectedRows] = React.useState([]);
   const [editedProducts, setEditedProducts] = React.useState({});
@@ -103,10 +106,11 @@ export default function AdminProducts() {
   const fetchGroups = async () => {
     const response = await fetch("/groups");
     const data = await response.json();
-    data.groups.sort();
+    const parsedGroups = data.map((group) => group.name)
+    data.sort();
     // data.groups.unshift("Всі групи");
 
-    setInitialGroups(data.groups);
+    setInitialGroups(parsedGroups);
   };
 
   React.useEffect(() => {
@@ -119,26 +123,25 @@ export default function AdminProducts() {
     renderEditCell: renderEditTextarea,
   };
 
+  const renderMiniature = (params) => {
+    const isMiniature = Boolean(params.value?.length);
+
+    return isMiniature ? "+" : "-";
+  }
+
+  const renderPhotos = (params) => {
+    const photosCount = params.value?.length;
+    return photosCount;
+  }
+
   const columns = [
     { field: "code", headerName: "Код", width: 90 },
     { field: "name", headerName: "Назва", width: 150, editable: true },
+    { field: "miniature", headerName: "Мініатюра", width: 90, renderCell: renderMiniature, type: "string" },
+    { field: "photos", headerName: "Світлини", width: 90, renderCell: renderPhotos },
     { field: "description", headerName: "Опис", width: 150, editable: true, ...multilineColumn, },
-    {
-      field: "availability",
-      headerName: "Наявність",
-      width: 150,
-      editable: true,
-      type: "boolean",
-    },
-    { field: "price", headerName: "Ціна", width: 150, editable: true },
-    {
-      field: "group",
-      headerName: "Група",
-      width: 150,
-      editable: true,
-      type: "singleSelect",
-      valueOptions: initialGroups,
-    },
+    { field: "price", headerName: "Ціна", width: 90, editable: true },
+    { field: "group", headerName: "Група", width: 150, editable: true, type: "singleSelect", valueOptions: initialGroups,},
   ];
 
   const handleDelete = () => {
@@ -157,8 +160,6 @@ export default function AdminProducts() {
           setOpenAlert(true);
           handleCloseModal();
           fetchCards();
-          // console.log(data);
-          // return res.json();
         } else {
           return res.json().then((data) => console.log(data));
         }
@@ -168,6 +169,10 @@ export default function AdminProducts() {
         setOpenAlertError(true);
         console.log(e);
       });
+  };
+
+  const handleEdit = () => {
+    navigate(`../admin/page/editproduct/${selectedRows[0]}`, { replace: true });
   };
 
   const [open, setOpen] = React.useState(false);
@@ -223,7 +228,6 @@ export default function AdminProducts() {
     for (const key in editedProducts) {
       editedProductsArray.push(editedProducts[key])
   }
-    console.log(editedProductsArray);
 
     const data = {productsToUpdateArray: editedProductsArray};
 
@@ -268,7 +272,6 @@ export default function AdminProducts() {
           autoHeight
           onSelectionModelChange={(ids) => {
             setSelectedRows(ids);
-            console.log(ids);
           }}
           experimentalFeatures={{ newEditingApi: true }}
           processRowUpdate={processRowUpdate}
@@ -282,8 +285,13 @@ export default function AdminProducts() {
           spacing={12}
         >
           <Grid item>
-            <Button variant="contained" onClick={handleSave} sx={{ my: 2 }}>
+            <Button variant="contained" onClick={handleSave} sx={{ my: 2 }} color="success">
               Зберегти
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button variant="contained" onClick={handleEdit} sx={{ my: 2 }}>
+              Редагувати
             </Button>
           </Grid>
           <Grid item>

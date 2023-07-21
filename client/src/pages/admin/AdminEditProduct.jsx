@@ -21,13 +21,54 @@ import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
-import ProductMainImage from "../components/ProductMainImage";
+import ProductMainImage from "../../components/ProductMainImage";
+import { useNavigate, useParams } from "react-router";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-export default function AdminRecord() {
+export default function AdminEditProduct() {
+  const params = useParams();
+
+  const [product, setProduct] = React.useState({
+    name: "",
+    description: "",
+    price: 0,
+    group: "",
+    mainPhoto: "",
+  });
+
+  // console.log("product", product);
+  React.useEffect(() => {
+    const value = {
+      id: params.productId,
+    };
+
+    fetch("/product", {
+      method: "POST",
+      body: JSON.stringify(value),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => {
+        // loading status
+        if (res.ok) {
+          return res.json();
+        } else {
+          return res.json().then((data) => console.log(data));
+        }
+      })
+      .then((data) => {
+        setProduct(data);
+        setFiles(data.photos)
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }, [params]);
+
   const formRef = React.useRef();
   const fileInputRef = React.useRef();
   const nameInputRef = React.useRef();
@@ -43,19 +84,23 @@ export default function AdminRecord() {
   const [mainPhotoBlob, setMainPhotoBlob] = React.useState();
   const [fileName, setFileName] = React.useState();
   const [initialGroups, setInitialGroups] = React.useState([]);
+  const [isMainPhotoModified, setIsMainPhotoModified] = React.useState(false);
+  const [isMiniatureModified, setIsMiniatureModified] = React.useState(false);
+  const [isPhotosModified, setIsPhotosModified] = React.useState(false);
+
+  console.log(isMainPhotoModified, isMiniatureModified, isPhotosModified)
 
   React.useEffect(() => {
     const fetchGroups = async () => {
       const response = await fetch("/groups");
       const data = await response.json();
 
-      const arrayOfObjects = data.groups.map((item, index) => {
+      const arrayOfObjects = data.map((item, index) => {
         return {
           index,
-          group: item,
+          group: item.name,
         };
       });
-      console.log(arrayOfObjects);
 
       setInitialGroups(arrayOfObjects);
     };
@@ -113,7 +158,7 @@ export default function AdminRecord() {
   };
 
   async function handleChange(e) {
-    console.log(e.target.files);
+    setIsPhotosModified(true);
     setFiles(
       Array.from(e.target.files).map((file) => URL.createObjectURL(file))
     );
@@ -121,17 +166,7 @@ export default function AdminRecord() {
     let arrayOfBlobs = [];
     let arrayOfNames = [];
 
-    // await Promise.all(
-    //   Array.from(e.target.files).map(async (file, i) => {
-    //     const base64 = await convertBase64(file);
-
-    //     arrayOfBlobs.push(base64);
-    //     arrayOfNames.push(file.name);
-    //   })
-    // );
-
-    const photosArray = Array.from(e.target.files)
-    console.log(photosArray)
+    const photosArray = Array.from(e.target.files);
 
     for (let i = 0; i < photosArray.length; i++) {
       const base64 = await convertBase64(photosArray[i]);
@@ -140,8 +175,8 @@ export default function AdminRecord() {
       arrayOfNames.push(photosArray[i].name);
     }
 
-    console.log(arrayOfBlobs)
-    console.log(arrayOfNames)
+    console.log(arrayOfBlobs);
+    console.log(arrayOfNames);
 
     setBlob(arrayOfBlobs);
     setFileName(arrayOfNames); //array
@@ -150,7 +185,6 @@ export default function AdminRecord() {
   const [checkboxValue, setCheckboxValue] = React.useState(false);
 
   function handleChangeCheckbox(e) {
-    console.log(e.target.value);
     setCheckboxValue(!checkboxValue);
   }
 
@@ -161,9 +195,13 @@ export default function AdminRecord() {
   };
 
   const emptyForm = () => {
+    // formRef.current.reset()
+    nameInputRef.current.value = "";
     descriptionInputRef.current.value = "";
+    priceInputRef.current.value = "";
     fileInputRef.current.value = "";
     setBlob([]);
+    setGroupValue("");
     setFiles([]);
   };
 
@@ -171,14 +209,31 @@ export default function AdminRecord() {
     e.preventDefault();
 
     const form = {
-      photos: blob,
-      description: descriptionInputRef.current.value,
+      _id: product._id,
+      name: product.name,
+      description: product.description,
+      price: +product.price,
+      group: product.group,
     };
 
-    console.log(form);
+    // miniature: miniatureBlob,
+    //   mainPhoto: mainPhotoBlob,
+    //   photos: blob,
 
-    fetch("/admin/records", {
-      method: "POST",
+    if (isMainPhotoModified) {
+      form.mainPhoto = mainPhotoBlob;
+    }
+
+    if (isMiniatureModified) {
+      form.miniature = miniatureBlob;
+    }
+
+    if (isPhotosModified) {
+      form.photos = blob;
+    }
+
+    fetch("/admin/products", {
+      method: "PUT",
       body: JSON.stringify(form),
       headers: {
         "Content-Type": "application/json",
@@ -187,7 +242,7 @@ export default function AdminRecord() {
       .then((res) => {
         // loading status
         if (res.ok) {
-          return res.json();
+          // return res.json();
         } else {
           return res.json().then((data) => console.log(data));
         }
@@ -205,12 +260,12 @@ export default function AdminRecord() {
   };
 
   const handleMainPhotoChange = (file) => {
-    setMainPhotoBlob(file)
-  }
+    setMainPhotoBlob(file);
+  };
 
   const handleMiniatureChange = (file) => {
-    setMiniatureBlob(file)
-  }
+    setMiniatureBlob(file);
+  };
 
   return (
     <>
@@ -218,7 +273,17 @@ export default function AdminRecord() {
       <Container sx={{ py: 2 }} maxWidth="sm">
         <form onSubmit={submitFormHandler} ref={formRef}>
           <div>
-            <Typography>Фото:</Typography>
+            <Typography>Основне фото/мініатюра:</Typography>
+            <ProductMainImage
+              handleMainPhotoChange={handleMainPhotoChange}
+              handleMiniatureChange={handleMiniatureChange}
+              setIsMainPhotoModified={setIsMainPhotoModified}
+              setIsMiniatureModified={setIsMiniatureModified}
+              mainPhoto={product.mainPhoto}
+            />
+          </div>
+          <div>
+            <Typography>Інші фото:</Typography>
             {files?.map((file) => (
               <img src={file} style={{ height: "100px" }} />
             ))}
@@ -231,15 +296,50 @@ export default function AdminRecord() {
             ref={fileInputRef}
           ></input>
           <TextField
+            label="Назва"
+            variant="outlined"
+            value={product.name}
+            onChange={(e) => setProduct({...product, name: e.target.value})}
+            inputRef={nameInputRef}
+            fullWidth
+            sx={{ py: 2 }}
+          />
+          <TextField
             fullWidth
             label="Опис"
+            value={product.description}
+            onChange={(e) => setProduct({...product, description: e.target.value})}
             variant="outlined"
             multiline
             inputRef={descriptionInputRef}
             sx={{ py: 2 }}
           />
+          <TextField
+            fullWidth
+            label="Ціна"
+            value={product.price}
+            onChange={(e) => setProduct({...product, price: e.target.value})}
+            variant="outlined"
+            multiline
+            inputRef={priceInputRef}
+            sx={{ py: 2 }}
+          />
+
+          <FormControl fullWidth sx={{ py: 2 }}>
+            <InputLabel>Група</InputLabel>
+            <Select
+              label="Група"
+              onChange={(e) => setProduct({...product, group: e.target.value})}
+              inputRef={groupInputRef}
+              value={product.group}
+            >
+              {initialGroups.map((group) => {
+                return <MenuItem value={group.group}>{group.group}</MenuItem>;
+              })}
+            </Select>
+          </FormControl>
           <Button variant="contained" type="submit" onClick={handleToggle}>
-            Створити
+            Оновити
           </Button>
         </form>
         <Card />
@@ -249,7 +349,7 @@ export default function AdminRecord() {
         // sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={open}
-      // onClick={handleClose}
+        // onClick={handleClose}
       >
         <CircularProgress color="inherit" />
       </Backdrop>

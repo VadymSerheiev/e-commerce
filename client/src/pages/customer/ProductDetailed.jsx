@@ -1,11 +1,11 @@
 import { Button, Container, Skeleton } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import * as React from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
-import Grid from "@mui/material/Grid";
 import ImageViewer from "react-simple-image-viewer";
-import Greetings from "../components/Greetings";
+import Greetings from "../../components/Greetings";
+import { v4 as uuidv4 } from 'uuid';
 
-import sheep from "../recources/sheep.jpg";
 
 export default function ProductDetailed() {
   const navigate = useNavigate();
@@ -52,9 +52,10 @@ export default function ProductDetailed() {
 
   const clickBackHandler = () => {
     navigate(-1);
-    // document.querySelector("#store").scrollIntoView({
-    //   behavior: "smooth",
-    // });
+    // window.scrollTo(0, 0);
+    document.querySelector("#store").scrollIntoView({
+      behavior: "smooth",
+    });
   };
 
   const openImageViewer = React.useCallback((index) => {
@@ -71,42 +72,50 @@ export default function ProductDetailed() {
     <>
       <Greetings />
       <Container sx={{ py: 8 }} maxWidth="md">
-        <Grid
-          container
-          spacing={4}
-          direction="row"
-          justifyContent="center"
-        >
+        <Grid container spacing={4} direction="row" justifyContent="center">
           <Grid item xs={12} md={8}>
-
             {/* {!isPhotoLoaded &&  */}
-            <Grid container spacing={2} style={{display: `${!isPhotoLoaded ? "flex": "none"}`}}>
-
+            <Grid
+              container
+              spacing={2}
+              style={{ display: `${!isPhotoLoaded ? "flex" : "none"}` }}
+            >
               <Grid item xs={12}>
-                <Skeleton sx={{ width: "100%", height: "100%", aspectRatio: "3/4" }} animation="wave" variant="rectangular" />
+                <Skeleton
+                  sx={{ width: "100%", height: "100%", aspectRatio: "3/4" }}
+                  animation="wave"
+                  variant="rectangular"
+                />
               </Grid>
 
-              {[0, 1, 2].map((item) =>
-                <Grid item xs={4}>
-                  <Skeleton sx={{ width: "100%", height: "100%", aspectRatio: "3/4" }} animation="wave" variant="rectangular" />
-                </Grid>)}
-
+              {[0, 1, 2].map((item) => (
+                <Grid item xs={4} key={uuidv4()}>
+                  <Skeleton
+                    sx={{ width: "100%", height: "100%", aspectRatio: "3/4" }}
+                    animation="wave"
+                    variant="rectangular"
+                  />
+                </Grid>
+              ))}
             </Grid>
             {/* } */}
 
             {/* {isPhotoLoaded &&  */}
-            <Grid container spacing={2} style={{display: `${isPhotoLoaded ? "flex": "none"}`}}>
-
+            <Grid
+              container
+              spacing={2}
+              style={{ display: `${isPhotoLoaded ? "flex" : "none"}` }}
+            >
               {product?.photos?.map((photo, index) => {
                 if (index === 0) {
                   return (
-                    <Grid item xs={12}>
+                    <Grid item xs={12} key={uuidv4()}>
                       <img
                         src={photo}
                         style={{ width: "100%" }}
                         onClick={() => openImageViewer(index)}
                         onLoad={() => setIsPhotoLoaded(true)}
-                      ></img>
+                      />
                     </Grid>
                   );
                 }
@@ -121,41 +130,39 @@ export default function ProductDetailed() {
                   </Grid>
                 );
               })}
-
             </Grid>
             {/* } */}
-
           </Grid>
 
+          {/* </Grid> */}
+          {!!product?.name && (
+            <Grid item xs={12} md={4}>
+              <h2>{product.name}</h2>
+              <p>Код: {product.code}</p>
+              {product?.description?.split("\n")?.map((item) => (
+                <p key={uuidv4()}>{item}</p>
+              ))}
+              {/* {product.availability ? <p style={{ color: "#1b5e20" }}>В наявності</p> : <p style={{ color: "#d32f2f" }}>Продано</p>} */}
+              <p>{product.price} ₴</p>
+              <Button onClick={clickBackHandler} variant="contained">
+                Повернутись
+              </Button>
+            </Grid>
+          )}
         </Grid>
-        {!!product?.name &&
-          <Grid item xs={12} md={4}>
-            <h2>{product.name}</h2>
-            <p>Код: {product.code}</p>
-            {product?.description?.split("\n")?.map((item) => (
-              <p>{item}</p>
-            ))}
-            {product.availability ? <p style={{ color: "#1b5e20" }}>В наявності</p> : <p style={{ color: "#d32f2f" }}>Продано</p>}
-            <p>{product.price} ₴</p>
-            <Button onClick={clickBackHandler} variant="contained">
-              Повернутись
-            </Button>
-          </Grid>
-        }
 
-
-      {isViewerOpen && (
-        <div style={{ zIndex: 2000, position: "relative" }}>
-          <ImageViewer
-            src={product?.photos}
-            currentIndex={currentImage}
-            disableScroll={false}
-            closeOnClickOutside={true}
-            onClose={closeImageViewer}
-          />
-        </div>
-      )}
-    </Container>
+        {isViewerOpen && (
+          <div style={{ zIndex: 2000, position: "relative" }}>
+            <ImageViewer
+              src={product?.photos}
+              currentIndex={currentImage}
+              disableScroll={false}
+              closeOnClickOutside={true}
+              onClose={closeImageViewer}
+            />
+          </div>
+        )}
+      </Container>
     </>
   );
 }

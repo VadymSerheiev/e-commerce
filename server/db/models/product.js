@@ -25,9 +25,9 @@ const productSchema = new mongoose.Schema({
   price: {
     type: Number,
   },
-  availability: {
-    type: Boolean,
-  },
+  // availability: {
+  //   type: Boolean,
+  // },
   group: {
     type: String,
   },
@@ -70,51 +70,51 @@ const generateDate = () => {
   return `${DD}-${MM}-${YYYY}-${hh}-${mm}`;
 };
 
+const createAndUploadFile = async (file) => {
+  const SCOPES = ["https://www.googleapis.com/auth/drive"];
+
+  const credentials = {
+    private_key: process.env.PRIVATE_KEY,
+    client_email: process.env.CLIENT_EMAIL,
+  };
+
+  const auth = new google.auth.GoogleAuth({
+    credentials: credentials,
+    scopes: SCOPES,
+  });
+
+  const driveService = google.drive({ version: "v3", auth });
+
+  const folderId = process.env.GOOGLE_DRIVE_PHOTOS;
+
+  var fileMetadata = {
+    name: generateDate(),
+    parents: [folderId],
+  };
+
+  const uploadImg = file.split(/,(.+)/)[1];
+  const buf = new Buffer.from(uploadImg, "base64"); // Added
+  const bs = new stream.PassThrough(); // Added
+  bs.end(buf); // Added
+
+  const media = {
+    body: bs, // Modified
+  };
+
+  const responseCreate = await driveService.files.create({
+    resource: fileMetadata,
+    media: media,
+  });
+  // console.log(file.slice(100, 150))
+  const dataCreate = responseCreate.data.id;
+  // console.log(responseCreate.data.id);
+  return dataCreate;
+  // https://drive.google.com/file/d/1TIDJn8KEPaQ69mtoKaTu8wBDAIVEClP6
+  // console.log(responseCreate.data.id);
+};
+
 productSchema.pre("save", async function (next) {
   const product = this;
-
-  const createAndUploadFile = async (file) => {
-    const SCOPES = ["https://www.googleapis.com/auth/drive"];
-
-    const credentials = {
-      private_key: process.env.PRIVATE_KEY,
-      client_email: process.env.CLIENT_EMAIL,
-    };
-
-    const auth = new google.auth.GoogleAuth({
-      credentials: credentials,
-      scopes: SCOPES,
-    });
-
-    const driveService = google.drive({ version: "v3", auth });
-
-    const folderId = process.env.GOOGLE_DRIVE_PHOTOS;
-
-    var fileMetadata = {
-      name: generateDate(),
-      parents: [folderId],
-    };
-
-    const uploadImg = file.split(/,(.+)/)[1];
-    const buf = new Buffer.from(uploadImg, "base64"); // Added
-    const bs = new stream.PassThrough(); // Added
-    bs.end(buf); // Added
-
-    const media = {
-      body: bs, // Modified
-    };
-
-    const responseCreate = await driveService.files.create({
-      resource: fileMetadata,
-      media: media,
-    });
-    // console.log(file.slice(100, 150))
-    const dataCreate = responseCreate.data.id;
-    // console.log(responseCreate.data.id);
-    return dataCreate;
-    // https://drive.google.com/file/d/1TIDJn8KEPaQ69mtoKaTu8wBDAIVEClP6
-    // console.log(responseCreate.data.id);
-  };
 
   if (product.isModified("photos")) {
     let photosArray = [];
@@ -145,6 +145,34 @@ productSchema.pre("save", async function (next) {
     { $set: { currentCode: newCode } }
   );
   product.code = generateCode(newCode);
+
+  next();
+});
+
+productSchema.pre("updateOne", async function (next) {
+  const product = this.getUpdate();
+
+  if (Boolean(product?.photos)) {
+    let photosArray = [];
+
+    for (let i = 0; i < product.photos.length; i++) {
+      const id = await createAndUploadFile(product.photos[i]);
+
+      photosArray.push(`https://drive.google.com/uc?id=${id}`);
+    }
+
+    product.photos = photosArray;
+  }
+
+  if (Boolean(product?.miniature)) {
+    const id = await createAndUploadFile(product.miniature);
+    product.miniature = `https://drive.google.com/uc?id=${id}`;
+  }
+
+  if (Boolean(product?.mainPhoto)) {
+    const id = await createAndUploadFile(product.mainPhoto);
+    product.mainPhoto = `https://drive.google.com/uc?id=${id}`;
+  }
 
   next();
 });

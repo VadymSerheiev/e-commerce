@@ -21,7 +21,7 @@ import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
-import ProductMainImage from "../components/ProductMainImage";
+import ProductMainImage from "../../components/ProductMainImage";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -49,10 +49,10 @@ export default function AdminProduct() {
       const response = await fetch("/groups");
       const data = await response.json();
 
-      const arrayOfObjects = data.groups.map((item, index) => {
+      const arrayOfObjects = data.map((item, index) => {
         return {
           index,
-          group: item,
+          group: item.name,
         };
       });
 
@@ -180,10 +180,10 @@ export default function AdminProduct() {
       name: nameInputRef.current.value,
       description: descriptionInputRef.current.value,
       price: +priceInputRef.current.value,
-      availability: checkboxValue,
+      // availability: checkboxValue,
       group: groupValue,
     };
-
+    console.log(form)
     fetch("/admin/products", {
       method: "POST",
       body: JSON.stringify(form),
@@ -267,7 +267,7 @@ export default function AdminProduct() {
             inputRef={priceInputRef}
             sx={{ py: 2 }}
           />
-          <FormGroup>
+          {/* <FormGroup>
             <FormControlLabel
               control={
                 <Checkbox onChange={handleChangeCheckbox} defaultChecked />
@@ -276,7 +276,7 @@ export default function AdminProduct() {
               inputRef={availabilityInputRef}
               fullWidth
             />
-          </FormGroup>
+          </FormGroup> */}
 
           <FormControl fullWidth sx={{ py: 2 }}>
             <InputLabel>Група</InputLabel>

@@ -5,13 +5,15 @@ require("./db/mongoose");
 const userRouter = require('./db/routers/user')
 const productRouter = require('./db/routers/product')
 const groupRouter = require('./db/routers/group')
-const blogRouter = require('./db/routers/blog')
+const blogRouter = require('./db/routers/blog') 
 const replicatorRouter = require('./db/routers/replicator')
+const orderRouter = require('./db/routers/order') 
 require('./db/functions/user');
 require('./db/functions/code');
 require('./db/functions/group');
 const cookieParser = require('cookie-parser');
 const auth = require('./middleware/auth');
+const cors = require('cors')
 
 const app = express();
 
@@ -27,7 +29,8 @@ app.use(productRouter)
 app.use(groupRouter)
 app.use(blogRouter)
 app.use(replicatorRouter)
-
+app.use(orderRouter)
+app.use(cors())
 
 if (process.env.MODE === 'production') {
   const dir = __dirname.replace('\server', '\client')

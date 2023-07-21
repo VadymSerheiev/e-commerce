@@ -13,7 +13,7 @@ import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 import AspectRatioIcon from "@mui/icons-material/AspectRatio";
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 import "react-image-crop/dist/ReactCrop.css";
 import { Button, ButtonGroup, Fab } from "@mui/material";
@@ -36,7 +36,42 @@ function centerAspectCrop(mediaWidth, mediaHeight, aspect) {
   );
 }
 
-export default function ProductMainImage({handleMainPhotoChange, handleMiniatureChange}) {
+function fetchImageAsBase64(url) {
+  const value = {
+    url,
+  };
+
+  return fetch('/image', {
+    method: "POST",
+    body: JSON.stringify(value),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      return response.blob();
+    })
+    .then(
+      (blob) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = reject;
+          reader.onload = () => {
+            resolve(reader.result);
+          };
+          // console.log(blob)
+          reader.readAsDataURL(blob);
+        })
+    );
+}
+
+export default function ProductMainImage({
+  handleMainPhotoChange,
+  handleMiniatureChange,
+  mainPhoto = "",
+  setIsMainPhotoModified = () => {},
+  setIsMiniatureModified = () => {},
+}) {
   const [imgSrc, setImgSrc] = useState("");
   const previewCanvasRef = useRef(null);
   const imgRef = useRef(null);
@@ -46,7 +81,22 @@ export default function ProductMainImage({handleMainPhotoChange, handleMiniature
   const [rotate, setRotate] = useState(0);
   const [aspect, setAspect] = useState(1 / 1);
 
+  React.useEffect(() => {
+    if (Boolean(mainPhoto?.length)) {
+      fetchImageAsBase64(mainPhoto)
+        .then((base64Image) => {
+          // console.log(base64Image)
+          setImgSrc(base64Image);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  }, [mainPhoto]);
+
   function onSelectFile(e) {
+    setIsMainPhotoModified(true);
+    setIsMiniatureModified(true);
     if (e.target.files && e.target.files.length > 0) {
       setCrop(undefined); // Makes crop preview update between images.
       const reader = new FileReader();
@@ -81,7 +131,7 @@ export default function ProductMainImage({handleMainPhotoChange, handleMiniature
           scale,
           rotate
         );
-        handleMiniatureChange(previewCanvasRef.current.toDataURL('image/jpeg')) // ('image/jpeg', 0.5) - minimize image quality to 50%
+        handleMiniatureChange(previewCanvasRef.current.toDataURL("image/jpeg")); // ('image/jpeg', 0.5) - minimize image quality to 50%
       }
     },
     100,
@@ -97,78 +147,91 @@ export default function ProductMainImage({handleMainPhotoChange, handleMiniature
       setCrop(centerAspectCrop(width, height, 1 / 1));
     }
   }
-  
+
   return (
     <div className="App">
       <div className="Crop-Controls">
-        <input type="file" accept="image/*" onChange={onSelectFile} style={{ margin: "10px 0px" }}/>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onSelectFile}
+          style={{ margin: "10px 0px" }}
+        />
         {!!imgSrc && (
-        <div style={{ margin: "10px 0px" }} >
-          <ButtonGroup aria-label="text button group" variant="outlined" sx={{ mr: 1 }}>
-            <Button>
-              {/* <Fab color="primary" size="small"> */}
-              <ZoomOutIcon
-                onClick={() => setScale(Number(scale - 0.1))}
-                size="small"
-              />
-              {/* </Fab> */}
-            </Button>
-            <Button>
-              <span>{scale.toFixed(1)}</span>
-            </Button>
-            <Button>
-              {/* <Fab color="primary" size="small"> */}
-              <ZoomInIcon onClick={() => setScale(Number(scale + 0.1))} />
-              {/* </Fab> */}
-            </Button>
-          </ButtonGroup>
+          <div style={{ margin: "10px 0px" }}>
+            <ButtonGroup
+              aria-label="text button group"
+              variant="outlined"
+              sx={{ mr: 1 }}
+            >
+              <Button>
+                {/* <Fab color="primary" size="small"> */}
+                <ZoomOutIcon
+                  onClick={() => setScale(Number(scale - 0.1))}
+                  size="small"
+                />
+                {/* </Fab> */}
+              </Button>
+              <Button>
+                <span>{scale.toFixed(1)}</span>
+              </Button>
+              <Button>
+                {/* <Fab color="primary" size="small"> */}
+                <ZoomInIcon onClick={() => setScale(Number(scale + 0.1))} />
+                {/* </Fab> */}
+              </Button>
+            </ButtonGroup>
 
-          <ButtonGroup
-            aria-label="text button group"
-            variant="outlined"
-            sx={{ mr: 1 }}
-          >
-            <Button>
-              {/* <Fab color="primary" size="small"> */}
-              <RotateLeftIcon
-                onClick={() =>
-                  setRotate(Math.min(180, Math.max(-180, Number(rotate - 1))))
-                }
-              />
-              {/* </Fab> */}
-            </Button>
-            <Button>
-              <span>{rotate}</span>
-            </Button>
-            <Button>
-              {/* <Fab color="primary" size="small"> */}
-              <RotateRightIcon
-                onClick={() =>
-                  setRotate(Math.min(180, Math.max(-180, Number(rotate + 1))))
-                }
-              />
-              {/* </Fab> */}
-            </Button>
-          </ButtonGroup>
+            <ButtonGroup
+              aria-label="text button group"
+              variant="outlined"
+              sx={{ mr: 1 }}
+            >
+              <Button>
+                {/* <Fab color="primary" size="small"> */}
+                <RotateLeftIcon
+                  onClick={() =>
+                    setRotate(Math.min(180, Math.max(-180, Number(rotate - 1))))
+                  }
+                />
+                {/* </Fab> */}
+              </Button>
+              <Button>
+                <span>{rotate}</span>
+              </Button>
+              <Button>
+                {/* <Fab color="primary" size="small"> */}
+                <RotateRightIcon
+                  onClick={() =>
+                    setRotate(Math.min(180, Math.max(-180, Number(rotate + 1))))
+                  }
+                />
+                {/* </Fab> */}
+              </Button>
+            </ButtonGroup>
 
-          <ButtonGroup
-            aria-label="text button group"
-            variant="outlined"
-          >
-            <Button>
-              {/* <Fab color="primary" size="small"> */}
-              <AspectRatioIcon onClick={handleToggleAspectClick} sx={{height: "24.5px"}} />
-              {/* </Fab> */}
-            </Button>
-          </ButtonGroup>
-        </div>
+            <ButtonGroup aria-label="text button group" variant="outlined">
+              <Button>
+                {/* <Fab color="primary" size="small"> */}
+                <AspectRatioIcon
+                  onClick={handleToggleAspectClick}
+                  sx={{ height: "24.5px" }}
+                />
+                {/* </Fab> */}
+              </Button>
+            </ButtonGroup>
+          </div>
         )}
       </div>
       {!!imgSrc && (
         <ReactCrop
           crop={crop}
-          onChange={(_, percentCrop) => setCrop(percentCrop)}
-          onComplete={(c) => setCompletedCrop(c)}
+          onChange={(_, percentCrop) => {
+            setIsMiniatureModified(true);
+            setCrop(percentCrop)
+          }}
+          onComplete={(c) => {
+            setCompletedCrop(c)}}
           aspect={aspect}
         >
           <img

@@ -38,15 +38,15 @@ export default function AdminGroups() {
   const fetchGroups = async () => {
     const response = await fetch("/groups");
     const data = await response.json();
-
-    const arrayOfObjects = data.groups.map((item, index) => {
+    console.log(data)
+    const arrayOfObjects = data.map((item, index) => {
       return {
         index,
         group: item,
       };
     });
 
-    setInitialGroups(arrayOfObjects);
+    setInitialGroups(data);
   };
 
   React.useEffect(() => {
@@ -120,9 +120,9 @@ export default function AdminGroups() {
   };
 
   const columns = [
-    { field: "group", headerName: "Групи", width: 150, editable: true },
+    { field: "name", headerName: "Групи", width: 150, editable: false },
   ];
-
+console.log(initialGroups)
   return (
     <>
       {/* <TopBar showIcon="logout" isShowMenu={true} /> */}
@@ -130,7 +130,7 @@ export default function AdminGroups() {
         <DataGrid
           rows={initialGroups}
           columns={columns}
-          getRowId={(row) => row.group}
+          getRowId={(row) => row._id}
           pageSize={10}
           rowsPerPageOptions={[5]}
           checkboxSelection

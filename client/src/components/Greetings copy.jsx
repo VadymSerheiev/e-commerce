@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Box, Button, Container } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import sheep from "../recources/sheep.jpg";
-import forest from "../recources/forest.jpg";
+import sheep from "../resources/sheep.jpg";
+import forest from "../resources/forest.jpg";
 import AnchorLink from "react-anchor-link-smooth-scroll";
 import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown";
 import { useLocation } from "react-router-dom";

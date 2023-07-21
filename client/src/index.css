@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'French';
-    src: local('French'), url(./recources/FrenchScriptMT.ttf) format('truetype');
+    src: local('French'), url(./resources/FrenchScriptMT.ttf) format('truetype');
   }
 
   .french-font {
@@ -34,4 +34,19 @@ body {
 
   /* transition: opacity 1000ms ease-out, transform 300ms ease; */
   transition: opacity 300ms ease-out;
+}
+
+.parallax {
+  /* The image used */
+  background-image: url("./resources/forest.jpg");
+
+  /* Set a specific height */
+  min-height: 100vh; 
+
+  /* Create the parallax scrolling effect */
+  background-attachment: fixed;
+  /* background-position: top 64px center; */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
